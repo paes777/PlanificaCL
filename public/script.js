@@ -341,10 +341,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Error al cerrar sesión:", error);
             }
         } else {
-            // Iniciar sesión con Popup
+            // Iniciar sesión con Redirect para evitar bloqueadores de popups
             const provider = new firebase.auth.GoogleAuthProvider();
             try {
-                await auth.signInWithPopup(provider);
+                await auth.signInWithRedirect(provider);
             } catch (error) {
                 console.error("Error al iniciar sesión con Google:", error);
                 alert("Error al iniciar sesión: " + error.message);

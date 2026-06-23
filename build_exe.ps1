@@ -16,7 +16,7 @@ Write-Host "Verificando dependencias de Python..." -ForegroundColor Yellow
 
 # 3. Compilar usando PyInstaller
 Write-Host "Ejecutando PyInstaller para crear el ejecutable local..." -ForegroundColor Yellow
-& $pyinstallerPath --onefile --noconsole --add-data "curriculum.json;." --add-data "templates;templates" --add-data "static;static" --name "PlanificaCL" app.py
+& $pyinstallerPath --onefile --console --add-data "curriculum.json;." --add-data "templates;templates" --add-data "static;static" --name "PlanificaCL" app.py
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "¡Compilación exitosa! Tu aplicación local se encuentra en: $currentDir\dist\PlanificaCL.exe" -ForegroundColor Green
