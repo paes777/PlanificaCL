@@ -1,0 +1,126 @@
+{
+  "1_basico": {
+    "lenguaje": [
+      { "id": "OA 1", "description": "Leer textos breves en voz alta para adquirir fluidez: pronunciando cada palabra con precisión, respetando los puntos y coma, y leyendo con velocidad adecuada." },
+      { "id": "OA 2", "description": "Reconocer que los textos escritos transmiten mensajes y que son escritos por alguien para cumplir un propósito." },
+      { "id": "OA 8", "description": "Demostrar comprensión de narraciones que aborden temas que les sean familiares: extrayendo información explícita e implícita, respondiendo preguntas sobre la historia." }
+    ],
+    "matematica": [
+      { "id": "OA 1", "description": "Contar números del 0 al 100 de 1 en 1, de 2 en 2, de 5 en 5 y de 10 en 10, hacia adelante y hacia atrás, empezando por cualquier número dado." },
+      { "id": "OA 3", "description": "Leer números del 0 al 20 y representarlos en forma concreta, pictórica y simbólica." },
+      { "id": "OA 9", "description": "Demostrar que comprenden la adición y la sustracción de números del 0 al 20 progresivamente." }
+    ],
+    "ciencias": [
+      { "id": "OA 1", "description": "Reconocer y observar, por medio de la exploración, que los seres vivos crecen, se responden a estímulos del medio, se reproducen y necesitan agua, alimento y aire para sobrevivir." },
+      { "id": "OA 6", "description": "Identificar y describir la ubicación y la función de los sentidos proponiendo medidas para protegerlos y prevenir situaciones de riesgo." }
+    ],
+    "historia": [
+      { "id": "OA 1", "description": "Nombrar y secuenciar días de la semana y meses del año, utilizando calendario, y localizar fechas significativas." },
+      { "id": "OA 2", "description": "Secuenciar acontecimientos y actividades de la vida cotidiana, personal y familiar, utilizando categorías relativas de tiempo (antes, después, ayer, hoy, mañana, etc.)." }
+    ]
+  },
+  "2_basico": {
+    "lenguaje": [
+      { "id": "OA 3", "description": "Comprender textos aplicando estrategias de comprensión lectora; por ejemplo: relacionar la información del texto con sus experiencias y conocimientos, visualizar lo que describe el texto." },
+      { "id": "OA 5", "description": "Demostrar comprensión de las narraciones leídas: extrayendo información explícita e implícita, reconstruyendo la secuencia de las acciones." }
+    ],
+    "matematica": [
+      { "id": "OA 1", "description": "Contar números del 0 al 1 000 de 2 en 2, de 5 en 5, de 10 en 10 y de 100 en 100, hacia adelante y hacia atrás." },
+      { "id": "OA 9", "description": "Demostrar que comprende la adición y la sustracción en el ámbito del 0 al 100 usando algoritmos y estrategias." }
+    ],
+    "ciencias": [
+      { "id": "OA 7", "description": "Identificar la ubicación y explicar la función de algunas partes del cuerpo que son fundamentales para vivir: corazón, pulmones, estómago, esqueleto y músculos." }
+    ],
+    "historia": [
+      { "id": "OA 1", "description": "Describir los modos de vida de algunos pueblos originarios de Chile en el período precolombino, incluyendo su ubicación geográfica, actividades y costumbres." }
+    ]
+  },
+  "3_basico": {
+    "lenguaje": [
+      { "id": "OA 4", "description": "Profundizar su comprensión de las narraciones leídas: extrayendo información explícita e implícita, formulando opiniones sobre el comportamiento de los personajes." },
+      { "id": "OA 12", "description": "Escribir frecuentemente, para desarrollar la creatividad y expresar sus ideas, textos como poemas, diarios de vida, anécdotas, cartas, blogs, etc." }
+    ],
+    "matematica": [
+      { "id": "OA 8", "description": "Demostrar que comprenden las tablas de multiplicar de 3, 4, 6, 7, 8 y 9 de manera mental y concreta." },
+      { "id": "OA 12", "description": "Generar, describir y registrar patrones numéricos y realizar predicciones a partir de ellos." }
+    ],
+    "ciencias": [
+      { "id": "OA 1", "description": "Observar y describir algunos cambios de las plantas con flor durante su ciclo de vida (germinación, crecimiento, reproducción, formación de la flor y del fruto)." }
+    ],
+    "historia": [
+      { "id": "OA 3", "description": "Explicar la importancia de satisfacer las necesidades básicas (alimentación, vivienda, educación, recreación, entre otras) para el desarrollo de la sociedad." }
+    ]
+  },
+  "4_basico": {
+    "lenguaje": [
+      { "id": "OA 3", "description": "Comprender textos aplicando estrategias de comprensión lectora; por ejemplo: resumir la información, formular preguntas sobre lo leído." },
+      { "id": "OA 6", "description": "Leer independientemente y comprender textos no literarios (cartas, biografías, relatos históricos, instrucciones, etc.) para ampliar su conocimiento del mundo." }
+    ],
+    "matematica": [
+      { "id": "OA 5", "description": "Demostrar que comprenden la multiplicación de números de tres dígitos por dígitos de un dígito: usando estrategias con o sin material concreto." },
+      { "id": "OA 13", "description": "Identificar y describir patrones numéricos en tablas que involucren una operación." }
+    ],
+    "ciencias": [
+      { "id": "OA 5", "description": "Identificar y describir la estructura y función del sistema locomotor (huesos, articulaciones y músculos) y del sistema nervioso." }
+    ],
+    "historia": [
+      { "id": "OA 1", "description": "Describir la civilización maya, considerando ubicación geográfica, organización política, actividades económicas, formas de cultivo y religión." }
+    ]
+  },
+  "5_basico": {
+    "lenguaje": [
+      { "id": "OA 4", "description": "Analizar aspectos relevantes de narraciones leídas para profundizar su comprensión: identificando las acciones, el ambiente y las características físicas y psicológicas de los personajes." }
+    ],
+    "matematica": [
+      { "id": "OA 4", "description": "Demostrar que comprenden la división con dividendos de tres dígitos y divisores de un dígito: realizando estimaciones, resolviendo problemas." }
+    ],
+    "ciencias": [
+      { "id": "OA 1", "description": "Describir la distribución del agua dulce y salada en la Tierra, comparando sus volúmenes, temperaturas, densidades y diversidad de flora y fauna." }
+    ],
+    "historia": [
+      { "id": "OA 2", "description": "Describir el proceso de conquista de América y de Chile, incluyendo a los principales actores (Corona española, conquistadores e indígenas), y el choque cultural." }
+    ]
+  },
+  "6_basico": {
+    "lenguaje": [
+      { "id": "OA 3", "description": "Leer y familiarizarse con un amplio repertorio de literatura para aumentar su conocimiento del mundo y desarrollar su imaginación; por ejemplo: cuentos folclóricos, novelas, mitos, etc." }
+    ],
+    "matematica": [
+      { "id": "OA 3", "description": "Demostrar que comprenden el concepto de razón de manera concreta, pictórica y simbólica, y aplicarlo a la resolución de problemas." }
+    ],
+    "ciencias": [
+      { "id": "OA 16", "description": "Describir los cambios físicos y sicológicos que ocurren durante la pubertad y la adolescencia, y reflexionar sobre la importancia del autocuidado y la higiene." }
+    ],
+    "historia": [
+      { "id": "OA 4", "description": "Analizar la organización democrática de Chile, considerando la división de poderes del Estado, la soberanía popular y el rol de la Constitución." }
+    ]
+  },
+  "7_basico": {
+    "lenguaje": [
+      { "id": "OA 8", "description": "Formular una interpretación de los textos literarios leídos o vistos, que sea coherente con su análisis, considerando temas recurrentes y la relación del texto con la sociedad." }
+    ],
+    "matematica": [
+      { "id": "OA 4", "description": "Mostrar que comprenden el concepto de porcentaje de diversas maneras: representándolo, calculándolo, y aplicándolo a situaciones cotidianas." }
+    ],
+    "ciencias": [
+      { "id": "OA 1", "description": "Comprender el funcionamiento de los sistemas digestivo, respiratorio, circulatorio y excretor en el cuerpo humano, y cómo se relacionan entre sí." }
+    ],
+    "historia": [
+      { "id": "OA 1", "description": "Explicar el proceso de hominización, reconociendo las principales etapas de la evolución de la especie humana, la dispersión en el planeta y el surgimiento del Neolítico." }
+    ]
+  },
+  "8_basico": {
+    "lenguaje": [
+      { "id": "OA 2", "description": "Reflexionar sobre las obras leídas, discutiendo aspectos de su contenido, temas y forma, fundamentando sus opiniones con citas textuales y referencias al texto." }
+    ],
+    "matematica": [
+      { "id": "OA 2", "description": "Utilizar operaciones con números enteros, racionales e irracionales para resolver problemas diversos de la vida diaria y de las ciencias." }
+    ],
+    "ciencias": [
+      { "id": "OA 2", "description": "Explicar la teoría celular y la importancia de la célula como unidad estructural, funcional y de origen de todos los seres vivos." }
+    ],
+    "historia": [
+      { "id": "OA 3", "description": "Analizar los factores que explican la transición del mundo medieval a la época moderna (siglos XIV al XVI), incluyendo el Humanismo, el Renacimiento y la Reforma religiosa." }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+# Directorios de dependencia
+node_modules/
+.npm/
+
+# Configuración local de credenciales de desarrollo
+config.json
+.planificacl/
+
+# Archivos de empaquetado de PyInstaller
+build/
+dist/
+*.spec
+
+# Exportaciones locales
+Planificaciones_Guardadas/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
