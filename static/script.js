@@ -21,17 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingTitle = document.getElementById('loading-title');
     const loadingDesc = document.getElementById('loading-desc');
     
-    // Modales y Configuración
-    const statusBadge = document.getElementById('status-badge');
-    const openConfigBtn = document.getElementById('open-config-btn');
-    const configModal = document.getElementById('config-modal');
-    const closeModalBtn = document.getElementById('close-modal-btn');
-    const cancelModalBtn = document.getElementById('cancel-modal-btn');
-    const saveKeyBtn = document.getElementById('save-key-btn');
-    const apiKeyInput = document.getElementById('api-key-input');
-    const modalFeedback = document.getElementById('modal-feedback');
-    const connectionCard = document.getElementById('connection-card');
-    const detectKeyBtn = document.getElementById('detect-key-btn');
+    // Modales y Configuración (Eliminado)
     
     // Botones de acción del documento
     const copyBtn = document.getElementById('copy-btn');
@@ -41,26 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Estado de la aplicación
     let curriculumData = {};
     let generatedMarkdown = '';
-    let hasApiKey = false;
-
-    // Inicialización: Cargar configuración y currículum
-    checkApiConnection();
+    // Inicialización: Cargar currículum
     loadCurriculumData();
-
-    // Eventos de Conexión y Modal
-    openConfigBtn.addEventListener('click', openModal);
-    connectionCard.addEventListener('click', (e) => {
-        if (e.target.id !== 'open-config-btn') openModal();
-    });
-    closeModalBtn.addEventListener('click', closeModal);
-    cancelModalBtn.addEventListener('click', closeModal);
-    saveKeyBtn.addEventListener('click', saveApiKey);
-    detectKeyBtn.addEventListener('click', detectAndSaveKey);
-    
-    // Cerrar modal al hacer clic fuera del contenido
-    window.addEventListener('click', (e) => {
-        if (e.target === configModal) closeModal();
-    });
 
     // Control del contador de clases
     counterDec.addEventListener('click', () => {
@@ -99,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { val: 'musica', name: 'Música' },
             { val: 'tecnologia', name: 'Tecnología' },
             { val: 'educacion_fisica', name: 'Educación Física y Salud' },
+            { val: 'orientacion', name: 'Orientación' },
             { val: 'mapudungun', name: 'Mapudungun' }
         ];
 
@@ -109,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
             subjectSelect.appendChild(opt);
         });
 
-        oaSelect.innerHTML = '<option value="" disabled selected>Selecciona una asignatura primero</option>';
+        oaSelect.innerHTML = '<option value="" disabled>Selecciona una asignatura primero</option>';
         oaSelect.disabled = true;
         customOaGroup.style.display = 'none';
     });
@@ -118,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const course = courseSelect.value;
         const subject = subjectSelect.value;
         oaSelect.disabled = false;
-        oaSelect.innerHTML = '<option value="" disabled selected>Selecciona un Objetivo (OA)</option>';
+        oaSelect.innerHTML = '<option value="" disabled>Selecciona uno o más Objetivos (OA)</option>';
 
         // Verificar si existen OAs en nuestra base de datos local
         const oasList = (curriculumData[course] && curriculumData[course][subject]) || [];
@@ -140,17 +113,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     oaSelect.addEventListener('change', () => {
-        if (oaSelect.value === 'custom') {
+        const selectedValues = Array.from(oaSelect.selectedOptions).map(opt => opt.value);
+        if (selectedValues.includes('custom')) {
             customOaGroup.style.display = 'block';
-            customOaDesc.value = '';
             customOaDesc.required = true;
-            customOaDesc.focus();
+            if(!customOaDesc.value) customOaDesc.focus();
         } else {
             customOaGroup.style.display = 'none';
             customOaDesc.required = false;
-            // Cargar la descripción del OA seleccionado
-            const selectedOpt = oaSelect.options[oaSelect.selectedIndex];
-            customOaDesc.value = selectedOpt.dataset.desc || '';
         }
     });
 
@@ -158,19 +128,33 @@ document.addEventListener('DOMContentLoaded', () => {
     planningForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        if (!hasApiKey) {
-            alert('Por favor, configura tu API Key de Gemini primero para poder conectar con la Inteligencia Artificial.');
-            openModal();
-            return;
-        }
+        // No se requiere API Key
 
         // Obtener datos
         const course = courseSelect.value;
         const subjectName = subjectSelect.options[subjectSelect.selectedIndex].textContent;
         const planType = planTypeSelect.value;
-        const oaId = oaSelect.value === 'custom' ? 'OA Personalizado' : oaSelect.value;
-        const oaDescription = customOaDesc.value;
+        
+        const selectedOaOptions = Array.from(oaSelect.selectedOptions);
+        if (selectedOaOptions.length === 0 || (selectedOaOptions.length === 1 && selectedOaOptions[0].value === '')) {
+            alert('⚠️ Debes seleccionar al menos un Objetivo de Aprendizaje (OA).');
+            return;
+        }
+
+        const oaId = selectedOaOptions.map(opt => opt.value === 'custom' ? 'OA Personalizado' : opt.value).join(', ');
+        
+        let oaDescriptions = [];
+        selectedOaOptions.forEach(opt => {
+            if (opt.value === 'custom') {
+                oaDescriptions.push(customOaDesc.value);
+            } else {
+                oaDescriptions.push(opt.dataset.desc);
+            }
+        });
+        const oaDescription = oaDescriptions.join('\\n--- \\n');
+        
         const numClasses = parseInt(classesCountInput.value);
+        const additionalInstructions = document.getElementById('additional-instructions').value;
 
         // UI de carga
         welcomeScreen.style.display = 'none';
@@ -213,7 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     plan_type: planType,
                     oa_id: oaId,
                     oa_desc: oaDescription,
-                    num_classes: numClasses
+                    num_classes: numClasses,
+                    additional_instructions: additionalInstructions
                 })
             });
 
@@ -223,6 +208,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (result.error) {
+                if (result.fallback_query) {
+                    const searchUrl = "https://www.google.com/search?q=" + encodeURIComponent(result.fallback_query);
+                    loadingScreen.style.display = 'none';
+                    welcomeScreen.style.display = 'flex';
+                    
+                    const existingError = welcomeScreen.querySelector('.api-error-msg');
+                    if (existingError) existingError.remove();
+                    
+                    const errorContainer = document.createElement('div');
+                    errorContainer.className = 'api-error-msg';
+                    errorContainer.innerHTML = `
+                        <div style="background-color: #fee2e2; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f87171; text-align: left;">
+                            <h4 style="color: #b91c1c; margin-top:0; display:flex; align-items:center; gap:8px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                Problema con la Inteligencia Artificial
+                            </h4>
+                            <p style="color: #7f1d1d; font-size: 14px; margin-bottom: 15px;">Tu API Key ha sido bloqueada o tiene problemas de cuota. El sistema no pudo conectarse con Gemini.</p>
+                            <p style="color: #7f1d1d; font-size: 14px; font-weight: 500;">💡 Solución alternativa: Buscar en Internet</p>
+                            <p style="color: #7f1d1d; font-size: 13px;">Hemos preparado una búsqueda automática en Google con los parámetros exactos de tu planificación para que encuentres material listo.</p>
+                            <a href="${searchUrl}" target="_blank" class="btn btn-primary" style="display: inline-flex; align-items: center; margin-top: 10px; background-color: #2563eb; color:white; text-decoration:none;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                Buscar esta planificación en Google
+                            </a>
+                            <details style="margin-top: 15px; cursor: pointer;">
+                                <summary style="color: #b91c1c; font-size: 12px;">Ver detalles del error técnico</summary>
+                                <p style="font-size: 11px; color: #991b1b; margin-top: 5px; font-family: monospace;">${result.error}</p>
+                            </details>
+                        </div>
+                    `;
+                    welcomeScreen.insertBefore(errorContainer, welcomeScreen.firstChild);
+                    return;
+                }
                 throw new Error(result.error);
             }
 
@@ -233,8 +250,11 @@ document.addEventListener('DOMContentLoaded', () => {
             documentPaper.innerHTML = marked.parse(generatedMarkdown);
             
             // Actualizar etiqueta del visor
-            const typeLabel = planType === 'clase_a_clase' ? 'Plan Clase a Clase' :
-                              planType === 'unidad' ? 'Planificación por Unidad' : 'Planificación Anual';
+            let typeLabel = 'Plan Clase a Clase';
+            if (planType === 'unidad') typeLabel = 'Planificación por Unidad';
+            if (planType === 'anual') typeLabel = 'Planificación Anual';
+            if (planType === 'evaluacion') typeLabel = 'Evaluación y Rúbrica';
+            
             documentBadge.textContent = typeLabel;
 
             // Mostrar el visor de documentos
@@ -301,46 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.print();
     });
 
-    // Funciones Auxiliares de Carga y Conexión
-    async function checkApiConnection() {
-        try {
-            const response = await fetch('/api/config');
-            const data = await response.json();
-            
-            if (data.has_key) {
-                statusBadge.className = 'status-indicator connected';
-                statusBadge.querySelector('.status-text').textContent = 'Sesión Iniciada';
-                hasApiKey = true;
-            } else {
-                statusBadge.className = 'status-indicator disconnected';
-                statusBadge.querySelector('.status-text').textContent = 'Sin iniciar sesión';
-                hasApiKey = false;
-            }
-        } catch (error) {
-            console.error('Error verificando conexión API:', error);
-        }
-    }
-
-    async function detectAndSaveKey() {
-        try {
-            // Solicitar permisos del portapapeles y leer
-            const text = await navigator.clipboard.readText();
-            const cleanKey = text.trim();
-            if (cleanKey.startsWith("AIzaSy")) {
-                apiKeyInput.value = cleanKey;
-                showModalFeedback('⚡ ¡Clave detectada en el portapapeles! Conectando...', 'success');
-                setTimeout(() => {
-                    saveApiKey();
-                }, 800);
-            } else {
-                showModalFeedback('No se detectó una API Key de Gemini válida en tu portapapeles. Asegúrate de iniciar sesión en Google AI Studio (Paso 1) y presionar "Copy".', 'error');
-            }
-        } catch (err) {
-            console.error("No se pudo leer el portapapeles: ", err);
-            showModalFeedback('El navegador bloqueó la lectura automática. Por favor, pega la clave (Ctrl+V) manualmente en la casilla de abajo y presiona Conectar.', 'error');
-        }
-    }
-
+    // Funciones Auxiliares
     async function loadCurriculumData() {
         try {
             const response = await fetch('/api/curriculum');
@@ -348,53 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error cargando base curricular:', error);
         }
-    }
-
-    function openModal() {
-        configModal.style.display = 'flex';
-        apiKeyInput.value = '';
-        modalFeedback.style.display = 'none';
-        apiKeyInput.focus();
-    }
-
-    function closeModal() {
-        configModal.style.display = 'none';
-    }
-
-    async function saveApiKey() {
-        const key = apiKeyInput.value.trim();
-        if (!key) {
-            showModalFeedback('La API Key no puede estar vacía.', 'error');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ api_key: key })
-            });
-
-            const result = await response.json();
-
-            if (result.error) {
-                showModalFeedback(result.error, 'error');
-            } else {
-                showModalFeedback('¡Clave guardada con éxito!', 'success');
-                setTimeout(() => {
-                    closeModal();
-                    checkApiConnection();
-                }, 1000);
-            }
-        } catch (error) {
-            showModalFeedback('Error al comunicarse con el servidor.', 'error');
-        }
-    }
-
-    function showModalFeedback(msg, type) {
-        modalFeedback.textContent = msg;
-        modalFeedback.className = `feedback-msg ${type}`;
-        modalFeedback.style.display = 'block';
     }
 
     function resetLoadingSteps() {

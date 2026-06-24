@@ -5,7 +5,7 @@ import webbrowser
 import threading
 import time
 from flask import Flask, request, jsonify, send_from_directory
-import google.generativeai as genai
+import g4f
 
 def get_resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -82,11 +82,7 @@ def handle_config():
 
 @app.route('/api/generate', methods=['POST'])
 def generate_plan():
-    config = load_config()
-    api_key = config.get('api_key')
-    if not api_key:
-        return jsonify({'error': 'No se ha configurado la API Key de Gemini. Por favor configúrala primero.'}), 400
-
+    # Ya no dependemos de la API Key, usaremos g4f para acceder a IA libremente por internet
     data = request.json or {}
     course = data.get('course')
     subject = data.get('subject')
@@ -94,14 +90,12 @@ def generate_plan():
     oa_id = data.get('oa_id', 'OA Personalizado')
     oa_desc = data.get('oa_desc', '')
     num_classes = data.get('num_classes', 1)
+    additional_instructions = data.get('additional_instructions', '').strip()
 
     if not course or not subject or not plan_type or not oa_desc:
         return jsonify({'error': 'Faltan parámetros requeridos para generar la planificación.'}), 400
 
-    # Configurar API de Gemini
-    genai.configure(api_key=api_key)
-    # Usando el modelo recomendado más rápido y potente para texto interactivo
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    instrucciones_extra = f"\nINSTRUCCIONES ADICIONALES DEL DOCENTE:\n{additional_instructions}\n(Asegúrate de incorporar estas especificaciones en tu propuesta.)\n" if additional_instructions else ""
 
     prompt = ""
     if plan_type == 'clase_a_clase':
@@ -112,7 +106,7 @@ Tu tarea es generar una planificación didáctica de NIVEL EXPERTO / DESTACADO p
 CURRÍCULUM:
 - Objetivo de Aprendizaje (OA): {oa_id}: {oa_desc}
 - Duración: Esta planificación debe distribuirse y detallarse en exactamente {num_classes} clases de 90 minutos cada una.
-
+{instrucciones_extra}
 REQUISITOS PEDAGÓGICOS DEL PORTAFOLIO DOCENTE (Nivel Experto):
 1. COHERENCIA CURRICULAR: Cada clase debe estar directamente alineada al OA. Las actividades y la evaluación deben medir exactamente el nivel taxonómico del OA.
 2. SECUENCIA DIDÁCTICA DE CADA CLASE: Para cada una de las {num_classes} clases, detalla detalladamente:
@@ -137,7 +131,7 @@ Genera una planificación de UNIDAD didáctica de NIVEL EXPERTO para la asignatu
 CURRÍCULUM:
 - Objetivo de Aprendizaje Principal (OA): {oa_id}: {oa_desc}
 - Duración estimada: 4 a 6 semanas.
-
+{instrucciones_extra}
 REQUISITOS PEDAGÓGICOS (Nivel Experto):
 1. NOMBRE DE LA UNIDAD: Creativo y motivador.
 2. PROPÓSITO DE LA UNIDAD: Justificación pedagógica de por qué es importante esta unidad y cómo conecta con la vida real del estudiante.
@@ -149,6 +143,23 @@ REQUISITOS PEDAGÓGICOS (Nivel Experto):
 
 Formatea tu respuesta en Markdown profesional con tablas y listas.
 """
+    elif plan_type == 'evaluacion':
+        prompt = f"""
+Actúa como un diseñador instruccional y evaluador docente experto en el sistema educativo de Chile, especialista en el Decreto 67 de evaluación formativa y sumativa.
+Tu tarea es generar un INSTRUMENTO DE EVALUACIÓN de NIVEL EXPERTO para la asignatura de {subject} en {course.replace('_', ' ')}.
+
+CURRÍCULUM:
+- Objetivos de Aprendizaje (OA) evaluados: {oa_id}:
+{oa_desc}
+{instrucciones_extra}
+REQUISITOS PEDAGÓGICOS DEL PORTAFOLIO DOCENTE (Nivel Experto):
+1. TABLA DE ESPECIFICACIONES: Diseña una tabla que relacione los OA con indicadores de evaluación y la taxonomía de Bloom o Anderson (Habilidades cognitivas).
+2. DISEÑO DEL INSTRUMENTO: Crea la evaluación completa. Si es una prueba escrita, incluye ítems de selección múltiple, de desarrollo y de aplicación (mínimo 5 preguntas de alta demanda cognitiva). Si es un proyecto/desempeño, describe las instrucciones claras para el estudiante.
+3. RÚBRICA DE EVALUACIÓN: Crea una rúbrica analítica muy detallada con 4 niveles de desempeño (Excelente, Bueno, Suficiente, Insuficiente) y descriptores claros para evaluar el instrumento o proyecto.
+4. RETROALIMENTACIÓN (Decreto 67): Sugiere 3 estrategias concretas para retroalimentar a los estudiantes a partir de los resultados de esta evaluación.
+
+Formatea tu respuesta de forma sumamente profesional usando Markdown estricto. Utiliza títulos, tablas y listas para facilitar la lectura. No uses explicaciones superfluas, ve directo al contenido pedagógico.
+"""
     else: # anual
         prompt = f"""
 Actúa como un diseñador instruccional y evaluador docente experto en Chile.
@@ -156,7 +167,7 @@ Genera una planificación ANUAL de NIVEL EXPERTO para la asignatura de {subject}
 
 CURRÍCULUM:
 - OA de referencia inicial: {oa_id}: {oa_desc} (Úsalo como punto de partida, pero incluye el diseño para todo el año).
-
+{instrucciones_extra}
 REQUISITOS PEDAGÓGICOS (Nivel Experto):
 1. PRESENTACIÓN Y ENFOQUE DE LA ASIGNATURA: Explicación de la didáctica de la asignatura según las bases curriculares.
 2. DISTRIBUCIÓN DEL AÑO EN 4 UNIDADES (Semestres 1 y 2):
@@ -168,13 +179,20 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
 """
 
     try:
-        response = model.generate_content(prompt)
+        response = g4f.ChatCompletion.create(
+            model=g4f.models.default,
+            messages=[{"role": "user", "content": prompt}]
+        )
         return jsonify({
             'success': True,
-            'plan_markdown': response.text
+            'plan_markdown': response
         })
     except Exception as e:
-        return jsonify({'error': f"Error al generar la planificación con Gemini: {str(e)}"}), 500
+        fallback_query = f'planificacion didactica "{subject}" "{course.replace("_", " ")}" "{oa_id}" chile'
+        return jsonify({
+            'error': f"Error de IA libre: {str(e)}. Intenta de nuevo o usa el botón de buscar.",
+            'fallback_query': fallback_query
+        }), 500
 
 @app.route('/api/save_plan', methods=['POST'])
 def save_plan_locally():
