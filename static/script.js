@@ -403,10 +403,17 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
     // Funciones Auxiliares
     async function loadCurriculumData() {
         try {
-            const response = await fetch('curriculum.json');
+            // Try Flask API first, then fall back to static file (GitHub Pages)
+            let response = await fetch('/api/curriculum');
+            if (!response.ok) throw new Error('API not available');
             curriculumData = await response.json();
-        } catch (error) {
-            console.error('Error cargando base curricular:', error);
+        } catch (e) {
+            try {
+                const response = await fetch('curriculum.json');
+                curriculumData = await response.json();
+            } catch (error) {
+                console.error('Error cargando base curricular:', error);
+            }
         }
     }
 
