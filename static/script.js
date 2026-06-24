@@ -187,64 +187,101 @@ document.addEventListener('DOMContentLoaded', () => {
             stepTimeouts.push(t);
         });
 
+        let prompt = "";
+        let instrucciones_extra = additionalInstructions ? `\nINSTRUCCIONES ADICIONALES DEL DOCENTE:\n${additionalInstructions}\n(Asegúrate de incorporar estas especificaciones en tu propuesta.)\n` : "";
+        
+        if (planType === 'clase_a_clase') {
+            prompt = `Actúa como un diseñador instruccional y evaluador docente experto en el sistema educativo de Chile (Marco para la Buena Enseñanza, Portafolio Docente).
+Tu tarea es generar una planificación didáctica de NIVEL EXPERTO / DESTACADO para la asignatura de ${subjectName} en ${course.replace('_', ' ')}.
+
+CURRÍCULUM:
+- Objetivo de Aprendizaje (OA): ${oaId}: ${oaDescription}
+- Duración: Esta planificación debe distribuirse y detallarse en exactamente ${numClasses} clases de 90 minutos cada una.
+${instrucciones_extra}
+REQUISITOS PEDAGÓGICOS DEL PORTAFOLIO DOCENTE (Nivel Experto):
+1. COHERENCIA CURRICULAR: Cada clase debe estar directamente alineada al OA. Las actividades y la evaluación deben medir exactamente el nivel taxonómico del OA.
+2. SECUENCIA DIDÁCTICA DE CADA CLASE: Para cada una de las ${numClasses} clases, detalla detalladamente:
+   - Nombre de la Clase y Objetivo Específico.
+   - INICIO (15 minutos): Activación de aprendizajes previos usando una estrategia interactiva, planteamiento de un Conflicto Cognitivo (pregunta desafiante de alta demanda), explicitación clara del objetivo de la sesión y los criterios de evaluación.
+   - DESARROLLO (60 minutos): Modelamiento claro por parte del docente (paso a paso), Diálogo instruccional con al menos 3 preguntas de alta demanda cognitiva (meta-comprensión), andamiaje diferenciado, y actividad práctica activa (individual o colaborativa) de los estudiantes.
+   - CIERRE (15 minutos): Metacognición guiada (preguntas reflexivas para los estudiantes), síntesis del aprendizaje formulada por los estudiantes, y una Evaluación Formativa explícita (ej. Ticket de Salida con sus respectivas preguntas).
+3. DISEÑO UNIVERSAL PARA EL APRENDIZAJE (DUA): Describe detalladamente cómo se abordan en la planificación:
+   - Principio 1 (Múltiples formas de Representación): Materiales visuales, auditivos y táctiles.
+   - Principio 2 (Múltiples formas de Acción y Expresión): Opciones para que los alumnos demuestren lo aprendido.
+   - Principio 3 (Múltiples formas de Compromiso): Opciones para motivar e involucrar a los estudiantes.
+4. RECURSOS EDUCATIVOS: Crea una sección con los recursos necesarios (guías de trabajo detalladas, textos, presentaciones, enlaces a fichas interactivas estilo Twinkl).
+5. INSTRUMENTO DE EVALUACIÓN: Diseña una rúbrica o escala de apreciación con criterios y niveles para evaluar el logro del OA al término de las sesiones.
+
+Formatea tu respuesta de forma sumamente profesional usando Markdown estricto. Utiliza títulos, tablas para las actividades o rúbricas, y listas para facilitar la lectura. No uses explicaciones superfluas, ve directo al grano con contenido pedagógico real, creativo y original (las clases deben ser didácticas y entretenidas, no monótonas).`;
+        } else if (planType === 'unidad') {
+            prompt = `Actúa como un diseñador instruccional y evaluador docente experto en Chile.
+Genera una planificación de UNIDAD didáctica de NIVEL EXPERTO para la asignatura de ${subjectName} en ${course.replace('_', ' ')}.
+
+CURRÍCULUM:
+- Objetivo de Aprendizaje Principal (OA): ${oaId}: ${oaDescription}
+- Duración estimada: 4 a 6 semanas.
+${instrucciones_extra}
+REQUISITOS PEDAGÓGICOS (Nivel Experto):
+1. NOMBRE DE LA UNIDAD: Creativo y motivador.
+2. PROPÓSITO DE LA UNIDAD: Justificación pedagógica de por qué es importante esta unidad y cómo conecta con la vida real del estudiante.
+3. OBJETIVOS DE APRENDIZAJE TRANSVERSALES (OAT): Selecciona al menos 2 enfocados en lo socioafectivo y ético.
+4. SECUENCIA TEMÁTICA DE CLASES: Un esquema o tabla que resuma de 4 a 6 clases clave de la unidad (indicando Objetivo de cada una, Concepto Clave y actividad general).
+5. ESTRATEGIA DE EVALUACIÓN DE LA UNIDAD: Evaluación diagnóstica, formativa (procesual) y sumativa final (ej. Diseño de un proyecto ABP o evaluación escrita coherente con rúbrica).
+6. ADECUACIONES CURRICULARES (DUA/PIE): Estrategias generales para la unidad.
+7. RECURSOS Y MATERIALES DE APOYO: Listado detallado.
+
+Formatea tu respuesta en Markdown profesional con tablas y listas.`;
+        } else if (planType === 'evaluacion') {
+            prompt = `Actúa como un diseñador instruccional y evaluador docente experto en el sistema educativo de Chile, especialista en el Decreto 67 de evaluación formativa y sumativa.
+Tu tarea es generar un INSTRUMENTO DE EVALUACIÓN de NIVEL EXPERTO para la asignatura de ${subjectName} en ${course.replace('_', ' ')}.
+
+CURRÍCULUM:
+- Objetivos de Aprendizaje (OA) evaluados: ${oaId}:
+${oaDescription}
+${instrucciones_extra}
+REQUISITOS PEDAGÓGICOS DEL PORTAFOLIO DOCENTE (Nivel Experto):
+1. TABLA DE ESPECIFICACIONES: Diseña una tabla que relacione los OA con indicadores de evaluación y la taxonomía de Bloom o Anderson (Habilidades cognitivas).
+2. DISEÑO DEL INSTRUMENTO: Crea la evaluación completa. Si es una prueba escrita, incluye ítems de selección múltiple, de desarrollo y de aplicación (mínimo 5 preguntas de alta demanda cognitiva). Si es un proyecto/desempeño, describe las instrucciones claras para el estudiante.
+3. RÚBRICA DE EVALUACIÓN: Crea una rúbrica analítica muy detallada con 4 niveles de desempeño (Excelente, Bueno, Suficiente, Insuficiente) y descriptores claros para evaluar el instrumento o proyecto.
+4. RETROALIMENTACIÓN (Decreto 67): Sugiere 3 estrategias concretas para retroalimentar a los estudiantes a partir de los resultados de esta evaluación.
+
+Formatea tu respuesta de forma sumamente profesional usando Markdown estricto. Utiliza títulos, tablas y listas para facilitar la lectura. No uses explicaciones superfluas, ve directo al contenido pedagógico.`;
+        } else {
+            prompt = `Actúa como un diseñador instruccional y evaluador docente experto en Chile.
+Genera una planificación ANUAL de NIVEL EXPERTO para la asignatura de ${subjectName} en ${course.replace('_', ' ')}.
+
+CURRÍCULUM:
+- OA de referencia inicial: ${oaId}: ${oaDescription} (Úsalo como punto de partida, pero incluye el diseño para todo el año).
+${instrucciones_extra}
+REQUISITOS PEDAGÓGICOS (Nivel Experto):
+1. PRESENTACIÓN Y ENFOQUE DE LA ASIGNATURA: Explicación de la didáctica de la asignatura según las bases curriculares.
+2. DISTRIBUCIÓN DEL AÑO EN 4 UNIDADES (Semestres 1 y 2):
+   - Detalla Nombre, Duración (en semanas), OAs prioritarios sugeridos para cada unidad, y Tipo de Evaluación Final de cada una.
+3. ORIENTACIONES METODOLÓGICAS GENERALES: Enfoque de enseñanza activa, aprendizaje profundo y DUA.
+4. PLAN DE EVALUACIÓN ANUAL: Descripción de cómo se aplicará el Decreto 67 en el aula (evaluación formativa y calificación).
+
+Formatea tu respuesta en Markdown profesional con tablas estructuradas por unidades.`;
+        }
+
         try {
-            const response = await fetch('/api/generate', {
+            const response = await fetch('https://text.pollinations.ai/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    course: course,
-                    subject: subjectName,
-                    plan_type: planType,
-                    oa_id: oaId,
-                    oa_desc: oaDescription,
-                    num_classes: numClasses,
-                    additional_instructions: additionalInstructions
+                    messages: [{role: "user", content: prompt}],
+                    model: "openai"
                 })
             });
 
             // Limpiar timeouts por si la API es más rápida o falla antes
             stepTimeouts.forEach(clearTimeout);
 
-            const result = await response.json();
-
-            if (result.error) {
-                if (result.fallback_query) {
-                    const searchUrl = "https://www.google.com/search?q=" + encodeURIComponent(result.fallback_query);
-                    loadingScreen.style.display = 'none';
-                    welcomeScreen.style.display = 'flex';
-                    
-                    const existingError = welcomeScreen.querySelector('.api-error-msg');
-                    if (existingError) existingError.remove();
-                    
-                    const errorContainer = document.createElement('div');
-                    errorContainer.className = 'api-error-msg';
-                    errorContainer.innerHTML = `
-                        <div style="background-color: #fee2e2; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f87171; text-align: left;">
-                            <h4 style="color: #b91c1c; margin-top:0; display:flex; align-items:center; gap:8px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                Problema con la Inteligencia Artificial
-                            </h4>
-                            <p style="color: #7f1d1d; font-size: 14px; margin-bottom: 15px;">Tu API Key ha sido bloqueada o tiene problemas de cuota. El sistema no pudo conectarse con Gemini.</p>
-                            <p style="color: #7f1d1d; font-size: 14px; font-weight: 500;">💡 Solución alternativa: Buscar en Internet</p>
-                            <p style="color: #7f1d1d; font-size: 13px;">Hemos preparado una búsqueda automática en Google con los parámetros exactos de tu planificación para que encuentres material listo.</p>
-                            <a href="${searchUrl}" target="_blank" class="btn btn-primary" style="display: inline-flex; align-items: center; margin-top: 10px; background-color: #2563eb; color:white; text-decoration:none;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                                Buscar esta planificación en Google
-                            </a>
-                            <details style="margin-top: 15px; cursor: pointer;">
-                                <summary style="color: #b91c1c; font-size: 12px;">Ver detalles del error técnico</summary>
-                                <p style="font-size: 11px; color: #991b1b; margin-top: 5px; font-family: monospace;">${result.error}</p>
-                            </details>
-                        </div>
-                    `;
-                    welcomeScreen.insertBefore(errorContainer, welcomeScreen.firstChild);
-                    return;
-                }
-                throw new Error(result.error);
+            if (!response.ok) {
+                throw new Error("La IA no pudo procesar la solicitud. " + response.statusText);
             }
 
-            // Guardar markdown generado
-            generatedMarkdown = result.plan_markdown;
+            const resultText = await response.text();
+            generatedMarkdown = resultText;
 
             // Renderizar Markdown a HTML en el papel
             documentPaper.innerHTML = marked.parse(generatedMarkdown);
@@ -324,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funciones Auxiliares
     async function loadCurriculumData() {
         try {
-            const response = await fetch('/api/curriculum');
+            const response = await fetch('curriculum.json');
             curriculumData = await response.json();
         } catch (error) {
             console.error('Error cargando base curricular:', error);
