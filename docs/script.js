@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const courseSelect = document.getElementById('course-select');
     const subjectSelect = document.getElementById('subject-select');
     const oaSelect = document.getElementById('oa-select');
+    const oaContainer = document.getElementById('oa-checkbox-container');
     const customOaGroup = document.getElementById('custom-oa-group');
     const customOaDesc = document.getElementById('custom-oa-desc');
     const planTypeSelect = document.getElementById('plan-type-select');
@@ -82,47 +83,85 @@ document.addEventListener('DOMContentLoaded', () => {
             subjectSelect.appendChild(opt);
         });
 
-        oaSelect.innerHTML = '<option value="" disabled>Selecciona una asignatura primero</option>';
-        oaSelect.disabled = true;
+        oaSelect.innerHTML = '';
+        oaContainer.innerHTML = '<p class="oa-placeholder">Selecciona una asignatura primero</p>';
         customOaGroup.style.display = 'none';
     });
 
     subjectSelect.addEventListener('change', () => {
         const course = courseSelect.value;
         const subject = subjectSelect.value;
-        oaSelect.disabled = false;
-        oaSelect.innerHTML = '<option value="" disabled>Selecciona uno o más Objetivos (OA)</option>';
+        oaSelect.innerHTML = '';
+        oaContainer.innerHTML = '';
 
         // Verificar si existen OAs en nuestra base de datos local
         const oasList = (curriculumData[course] && curriculumData[course][subject]) || [];
 
         oasList.forEach(oa => {
+            // Create checkbox item
+            const item = document.createElement('label');
+            item.className = 'oa-checkbox-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = oa.id;
+            checkbox.dataset.desc = oa.description;
+            
+            const label = document.createElement('span');
+            label.className = 'oa-label';
+            label.innerHTML = `<span class="oa-id">${oa.id}:</span> ${oa.description}`;
+            
+            checkbox.addEventListener('change', () => {
+                item.classList.toggle('selected', checkbox.checked);
+                syncHiddenSelect();
+            });
+            
+            item.appendChild(checkbox);
+            item.appendChild(label);
+            oaContainer.appendChild(item);
+
+            // Also populate hidden select for compatibility
             const opt = document.createElement('option');
             opt.value = oa.id;
             opt.textContent = `${oa.id}: ${oa.description.substring(0, 60)}...`;
-            // Guardar descripción en atributo de datos
             opt.dataset.desc = oa.description;
             oaSelect.appendChild(opt);
         });
 
-        // Opción manual para OAs no cargados o asignaturas secundarias
-        const customOpt = document.createElement('option');
-        customOpt.value = 'custom';
-        customOpt.textContent = '✏️ Ingresar OA personalizado manualmente...';
-        oaSelect.appendChild(customOpt);
+        // Opción manual para OAs no cargados
+        const customItem = document.createElement('label');
+        customItem.className = 'oa-checkbox-item';
+        const customCheckbox = document.createElement('input');
+        customCheckbox.type = 'checkbox';
+        customCheckbox.value = 'custom';
+        const customLabel = document.createElement('span');
+        customLabel.className = 'oa-label';
+        customLabel.textContent = '✏️ Ingresar OA personalizado manualmente...';
+        customCheckbox.addEventListener('change', () => {
+            customItem.classList.toggle('selected', customCheckbox.checked);
+            if (customCheckbox.checked) {
+                customOaGroup.style.display = 'block';
+                customOaDesc.required = true;
+                if(!customOaDesc.value) customOaDesc.focus();
+            } else {
+                customOaGroup.style.display = 'none';
+                customOaDesc.required = false;
+            }
+        });
+        customItem.appendChild(customCheckbox);
+        customItem.appendChild(customLabel);
+        oaContainer.appendChild(customItem);
     });
 
-    oaSelect.addEventListener('change', () => {
-        const selectedValues = Array.from(oaSelect.selectedOptions).map(opt => opt.value);
-        if (selectedValues.includes('custom')) {
-            customOaGroup.style.display = 'block';
-            customOaDesc.required = true;
-            if(!customOaDesc.value) customOaDesc.focus();
-        } else {
-            customOaGroup.style.display = 'none';
-            customOaDesc.required = false;
-        }
-    });
+    // Sync hidden select from checkboxes
+    function syncHiddenSelect() {
+        const checkboxes = oaContainer.querySelectorAll('input[type="checkbox"]:checked');
+        Array.from(oaSelect.options).forEach(opt => opt.selected = false);
+        checkboxes.forEach(cb => {
+            const opt = oaSelect.querySelector(`option[value="${cb.value}"]`);
+            if (opt) opt.selected = true;
+        });
+    }
 
     // Envío del Formulario de Planificación
     planningForm.addEventListener('submit', async (e) => {
@@ -135,23 +174,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const subjectName = subjectSelect.options[subjectSelect.selectedIndex].textContent;
         const planType = planTypeSelect.value;
         
-        const selectedOaOptions = Array.from(oaSelect.selectedOptions);
-        if (selectedOaOptions.length === 0 || (selectedOaOptions.length === 1 && selectedOaOptions[0].value === '')) {
+        // Leer OAs seleccionados desde los checkboxes
+        const checkedBoxes = oaContainer.querySelectorAll('input[type="checkbox"]:checked');
+        if (checkedBoxes.length === 0) {
             alert('⚠️ Debes seleccionar al menos un Objetivo de Aprendizaje (OA).');
             return;
         }
 
-        const oaId = selectedOaOptions.map(opt => opt.value === 'custom' ? 'OA Personalizado' : opt.value).join(', ');
-        
+        const oaIds = [];
         let oaDescriptions = [];
-        selectedOaOptions.forEach(opt => {
-            if (opt.value === 'custom') {
+        checkedBoxes.forEach(cb => {
+            if (cb.value === 'custom') {
+                oaIds.push('OA Personalizado');
                 oaDescriptions.push(customOaDesc.value);
             } else {
-                oaDescriptions.push(opt.dataset.desc);
+                oaIds.push(cb.value);
+                oaDescriptions.push(cb.dataset.desc);
             }
         });
-        const oaDescription = oaDescriptions.join('\\n--- \\n');
+        const oaId = oaIds.join(', ');
+        const oaDescription = oaDescriptions.join('\n--- \n');
         
         const numClasses = parseInt(classesCountInput.value);
         const additionalInstructions = document.getElementById('additional-instructions').value;

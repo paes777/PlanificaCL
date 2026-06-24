@@ -210,6 +210,84 @@ select:disabled, textarea:disabled {
     cursor: not-allowed;
 }
 
+/* OA Checkbox Container */
+.oa-checkbox-container {
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-sm);
+    background-color: rgba(255, 255, 255, 0.03);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.oa-checkbox-container::-webkit-scrollbar {
+    width: 6px;
+}
+.oa-checkbox-container::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+    border-radius: 3px;
+}
+.oa-checkbox-container::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+}
+.oa-checkbox-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.35);
+}
+
+.oa-placeholder {
+    color: var(--text-light);
+    font-size: 13px;
+    padding: 10px 8px;
+    opacity: 0.6;
+}
+
+.oa-checkbox-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid transparent;
+}
+
+.oa-checkbox-item:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+.oa-checkbox-item.selected {
+    background-color: rgba(26, 86, 219, 0.2);
+    border-color: rgba(26, 86, 219, 0.4);
+}
+
+.oa-checkbox-item input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--primary-color);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.oa-checkbox-item .oa-label {
+    font-size: 12px;
+    color: var(--text-white);
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.oa-checkbox-item .oa-id {
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-right: 4px;
+}
+
 /* Contador de clases */
 .counter-input {
     display: flex;

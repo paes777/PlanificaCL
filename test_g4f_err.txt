@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Users\Oscar\.gemini\antigravity\scratch\PlanificadorDocente\test_g4f.py", line 7, in <module>
+    provider=g4f.Provider.DuckDuckGo,
+             ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'g4f.Provider' has no attribute 'DuckDuckGo'
