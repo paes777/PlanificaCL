@@ -19,8 +19,10 @@ jobs:
           fi
           
       - name: Create Credentials File
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PLANIFICACL }}
         run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PLANIFICACL }}' > service-account.json
+          echo "$SERVICE_ACCOUNT_KEY" > service-account.json
           
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
