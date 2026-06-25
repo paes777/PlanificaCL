@@ -291,7 +291,7 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
 
         // Inyectar semilla de aleatoriedad para garantizar originalidad del diseño y evitar respuestas repetidas
         const randomSalt = Math.random().toString(36).substring(2, 10);
-        prompt += `\n\n[Semilla de variación única: ${randomSalt} - Genera un diseño pedagógico original y diferente a versiones previas.]`;
+        prompt = `[ID de Generación Única: ${randomSalt} - Por favor, diseña actividades originales, didácticas y creativas, evitando repetir propuestas anteriores.]\n\n` + prompt;
 
         try {
         // Lista de modelos a intentar en orden
@@ -305,14 +305,15 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
                 const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
 
                 const randomSeedValue = Math.floor(Math.random() * 1000000000);
-                const response = await fetch('https://text.pollinations.ai/', {
+                const response = await fetch(`https://text.pollinations.ai/?cachebust=${Date.now()}&seed=${randomSeedValue}&nofeed=true`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         messages: [{role: "user", content: prompt}],
                         model: model,
                         seed: randomSeedValue,
-                        temperature: 0.85
+                        temperature: 0.9,
+                        nofeed: true
                     }),
                     signal: controller.signal
                 });
