@@ -128,29 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
             oaSelect.appendChild(opt);
         });
 
-        // Opción manual para OAs no cargados
-        const customItem = document.createElement('label');
-        customItem.className = 'oa-checkbox-item';
-        const customCheckbox = document.createElement('input');
-        customCheckbox.type = 'checkbox';
-        customCheckbox.value = 'custom';
-        const customLabel = document.createElement('span');
-        customLabel.className = 'oa-label';
-        customLabel.textContent = '✏️ Ingresar OA personalizado manualmente...';
-        customCheckbox.addEventListener('change', () => {
-            customItem.classList.toggle('selected', customCheckbox.checked);
-            if (customCheckbox.checked) {
-                customOaGroup.style.display = 'block';
-                customOaDesc.required = true;
-                if(!customOaDesc.value) customOaDesc.focus();
-            } else {
-                customOaGroup.style.display = 'none';
-                customOaDesc.required = false;
-            }
-        });
-        customItem.appendChild(customCheckbox);
-        customItem.appendChild(customLabel);
-        oaContainer.appendChild(customItem);
+        // Mostrar siempre el grupo de OA personalizado de forma opcional
+        customOaGroup.style.display = 'block';
+        customOaDesc.required = false;
     });
 
     // Sync hidden select from checkboxes
@@ -174,24 +154,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const subjectName = subjectSelect.options[subjectSelect.selectedIndex].textContent;
         const planType = planTypeSelect.value;
         
-        // Leer OAs seleccionados desde los checkboxes
+        // Leer OAs seleccionados desde los checkboxes y el campo personalizado
         const checkedBoxes = oaContainer.querySelectorAll('input[type="checkbox"]:checked');
-        if (checkedBoxes.length === 0) {
-            alert('⚠️ Debes seleccionar al menos un Objetivo de Aprendizaje (OA).');
+        const customOaValue = customOaDesc.value.trim();
+        
+        if (checkedBoxes.length === 0 && customOaValue.length === 0) {
+            alert('⚠️ Debes seleccionar al menos un Objetivo de Aprendizaje (OA) de la lista o ingresar uno en el campo personalizado.');
             return;
         }
 
         const oaIds = [];
         let oaDescriptions = [];
+        
         checkedBoxes.forEach(cb => {
-            if (cb.value === 'custom') {
-                oaIds.push('OA Personalizado');
-                oaDescriptions.push(customOaDesc.value);
-            } else {
-                oaIds.push(cb.value);
-                oaDescriptions.push(cb.dataset.desc);
-            }
+            oaIds.push(cb.value);
+            oaDescriptions.push(cb.dataset.desc);
         });
+
+        if (customOaValue.length > 0) {
+            oaIds.push('OA Personalizado / Adicional');
+            oaDescriptions.push(customOaValue);
+        }
+        
         const oaId = oaIds.join(', ');
         const oaDescription = oaDescriptions.join('\n--- \n');
         
