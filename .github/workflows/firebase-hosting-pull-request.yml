@@ -12,6 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Verify Secret Presence
+        run: |
+          if [ -z "${{ secrets.FIREBASE_SERVICE_ACCOUNT_PLANIFICACL }}" ]; then
+            echo "::error::La clave secreta FIREBASE_SERVICE_ACCOUNT_PLANIFICACL esta vacia en GitHub. Por favor, verifica el nombre del secreto."
+            exit 1
+          else
+            echo "La clave secreta esta cargada correctamente."
+          fi
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
