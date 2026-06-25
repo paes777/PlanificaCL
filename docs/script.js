@@ -434,19 +434,27 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
 
     // Funciones Auxiliares
     async function loadCurriculumData() {
-        try {
-            // Try Flask API first, then fall back to static file (GitHub Pages)
-            let response = await fetch('/api/curriculum');
-            if (!response.ok) throw new Error('API not available');
-            curriculumData = await response.json();
-        } catch (e) {
+        // Intentar cargar curriculum.json (funciona en GitHub Pages y localmente)
+        const urls = ['curriculum.json', '/api/curriculum'];
+        for (const url of urls) {
             try {
-                const response = await fetch('curriculum.json');
-                curriculumData = await response.json();
-            } catch (error) {
-                console.error('Error cargando base curricular:', error);
+                const response = await fetch(url);
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type') || '';
+                    if (contentType.includes('json') || url.endsWith('.json')) {
+                        const data = await response.json();
+                        if (data && Object.keys(data).length > 0) {
+                            curriculumData = data;
+                            console.log('Currículum cargado desde:', url, '- Cursos:', Object.keys(data).length);
+                            return;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('No se pudo cargar desde', url, ':', e.message);
             }
         }
+        console.error('ERROR: No se pudo cargar la base curricular desde ninguna fuente.');
     }
 
     function resetLoadingSteps() {
