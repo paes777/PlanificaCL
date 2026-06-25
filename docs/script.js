@@ -299,8 +299,34 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
         prompt = `[ID de Generación Única: ${randomSalt} - Por favor, diseña actividades originales, didácticas y creativas, evitando repetir propuestas anteriores.]\n\n` + prompt;
 
         try {
-        // Lista de modelos a intentar en orden
-        const modelsToTry = ['openai', 'mistral', 'command-r-plus'];
+        // Lista de modelos a intentar en orden (con fallbacks seguros por defecto)
+        let modelsToTry = ['openai', 'openai-fast', 'gpt-oss'];
+        try {
+            const modelsResponse = await fetch('https://text.pollinations.ai/models');
+            if (modelsResponse.ok) {
+                const modelsData = await modelsResponse.json();
+                if (Array.isArray(modelsData) && modelsData.length > 0) {
+                    const dynamicModels = [];
+                    for (const m of modelsData) {
+                        if (m.name) dynamicModels.push(m.name);
+                        if (Array.isArray(m.aliases)) {
+                            dynamicModels.push(...m.aliases);
+                        }
+                    }
+                    if (dynamicModels.length > 0) {
+                        modelsToTry = [...new Set(dynamicModels)];
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error al obtener la lista de modelos de Pollinations:", e);
+        }
+
+        // Asegurar que siempre contenga al menos 'openai'
+        if (!modelsToTry.includes('openai')) {
+            modelsToTry.unshift('openai');
+        }
+
         let resultText = null;
         let lastError = null;
 
