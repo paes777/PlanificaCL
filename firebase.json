@@ -1,6 +1,5 @@
 {
   "hosting": {
-    "site": "planificacl",
     "public": "docs",
     "ignore": [
       "firebase.json",
