@@ -305,6 +305,7 @@ REQUISITOS PEDAGÓGICOS (Nivel Experto):
 Formatea tu respuesta en Markdown profesional con tablas estructuradas por unidades.`;
         }
 
+        try {
         // Lista de modelos a intentar en orden
         const modelsToTry = ['openai', 'mistral', 'command-r-plus'];
         let resultText = null;
