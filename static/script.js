@@ -289,6 +289,10 @@ REQUISITOS PEDAGÓGICOS (Nivel Experto):
 Formatea tu respuesta en Markdown profesional con tablas estructuradas por unidades.`;
         }
 
+        // Inyectar semilla de aleatoriedad para garantizar originalidad del diseño y evitar respuestas repetidas
+        const randomSalt = Math.random().toString(36).substring(2, 10);
+        prompt += `\n\n[Semilla de variación única: ${randomSalt} - Genera un diseño pedagógico original y diferente a versiones previas.]`;
+
         try {
         // Lista de modelos a intentar en orden
         const modelsToTry = ['openai', 'mistral', 'command-r-plus'];
@@ -300,12 +304,15 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
 
+                const randomSeedValue = Math.floor(Math.random() * 1000000000);
                 const response = await fetch('https://text.pollinations.ai/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         messages: [{role: "user", content: prompt}],
-                        model: model
+                        model: model,
+                        seed: randomSeedValue,
+                        temperature: 0.85
                     }),
                     signal: controller.signal
                 });
