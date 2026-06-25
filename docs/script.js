@@ -305,25 +305,57 @@ REQUISITOS PEDAGÓGICOS (Nivel Experto):
 Formatea tu respuesta en Markdown profesional con tablas estructuradas por unidades.`;
         }
 
-        try {
-            const response = await fetch('https://text.pollinations.ai/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    messages: [{role: "user", content: prompt}],
-                    model: "openai"
-                })
-            });
+        // Lista de modelos a intentar en orden
+        const modelsToTry = ['openai', 'mistral', 'command-r-plus'];
+        let resultText = null;
+        let lastError = null;
 
-            // Limpiar timeouts por si la API es más rápida o falla antes
-            stepTimeouts.forEach(clearTimeout);
+        for (const model of modelsToTry) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
 
-            if (!response.ok) {
-                throw new Error("La IA no pudo procesar la solicitud. " + response.statusText);
+                const response = await fetch('https://text.pollinations.ai/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: [{role: "user", content: prompt}],
+                        model: model
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    lastError = `Modelo ${model}: Error ${response.status}`;
+                    continue; // Intentar siguiente modelo
+                }
+
+                resultText = await response.text();
+                if (resultText && resultText.trim().length > 50) {
+                    break; // Éxito, salir del loop
+                } else {
+                    lastError = `Modelo ${model}: Respuesta vacía o muy corta`;
+                    resultText = null;
+                    continue;
+                }
+            } catch (e) {
+                lastError = e.name === 'AbortError' 
+                    ? `Modelo ${model}: Tiempo de espera agotado (2 min)` 
+                    : `Modelo ${model}: ${e.message}`;
+                continue;
             }
+        }
 
-            const resultText = await response.text();
-            generatedMarkdown = resultText;
+        // Limpiar timeouts de la animación de carga
+        stepTimeouts.forEach(clearTimeout);
+
+        if (!resultText) {
+            throw new Error(`No se pudo conectar con la IA después de ${modelsToTry.length} intentos. Último error: ${lastError}. Por favor intenta de nuevo en unos segundos.`);
+        }
+
+        generatedMarkdown = resultText;
 
             // Renderizar Markdown a HTML en el papel
             documentPaper.innerHTML = marked.parse(generatedMarkdown);
