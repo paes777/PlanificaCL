@@ -147,6 +147,17 @@ document.addEventListener('DOMContentLoaded', () => {
     planningForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        // Deshabilitar formulario durante la generación para evitar envíos concurrentes y error 429
+        const formElements = planningForm.elements;
+        for (let i = 0; i < formElements.length; i++) {
+            formElements[i].disabled = true;
+        }
+        const generateBtn = document.getElementById('generate-btn');
+        const originalBtnHTML = generateBtn.innerHTML;
+        generateBtn.innerHTML = `
+            <span class="spinner-small"></span> Generando...
+        `;
+
         // No se requiere API Key
 
         // Obtener datos
@@ -331,44 +342,72 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
         let lastError = null;
 
         for (const model of modelsToTry) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
+            // Intentar con reintentos y retroceso exponencial si ocurre error 429
+            const maxRetries = 3;
+            let currentRetry = 0;
+            let delay = 2000; // Delay inicial de 2 segundos
+            let modelSuccess = false;
 
-                const randomSeedValue = Math.floor(Math.random() * 1000000000);
-                const response = await fetch(`https://text.pollinations.ai/?cachebust=${Date.now()}&seed=${randomSeedValue}&nofeed=true`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        messages: [{role: "user", content: prompt}],
-                        model: model,
-                        seed: randomSeedValue,
-                        temperature: 0.9,
-                        nofeed: true
-                    }),
-                    signal: controller.signal
-                });
+            while (currentRetry < maxRetries) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
 
-                clearTimeout(timeoutId);
+                    const randomSeedValue = Math.floor(Math.random() * 1000000000);
+                    const response = await fetch(`https://text.pollinations.ai/?cachebust=${Date.now()}&seed=${randomSeedValue}&nofeed=true`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            messages: [{role: "user", content: prompt}],
+                            model: model,
+                            seed: randomSeedValue,
+                            temperature: 0.9,
+                            nofeed: true
+                        }),
+                        signal: controller.signal
+                    });
 
-                if (!response.ok) {
-                    lastError = `Modelo ${model}: Error ${response.status}`;
-                    continue; // Intentar siguiente modelo
+                    clearTimeout(timeoutId);
+
+                    if (response.status === 429) {
+                        currentRetry++;
+                        if (currentRetry < maxRetries) {
+                            console.warn(`Modelo ${model}: Recibió error 429 (Too Many Requests). Reintentando en ${delay}ms... (Intento ${currentRetry}/${maxRetries})`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            delay *= 2; // Retroceso exponencial
+                            continue;
+                        } else {
+                            lastError = `Modelo ${model}: Límite de peticiones excedido (Error 429)`;
+                            break;
+                        }
+                    }
+
+                    if (!response.ok) {
+                        lastError = `Modelo ${model}: Error ${response.status}`;
+                        break; // No reintentar otros códigos que no sean 429
+                    }
+
+                    resultText = await response.text();
+                    if (resultText && resultText.trim().length > 50) {
+                        modelSuccess = true;
+                        break; // Éxito, salir del loop de reintentos
+                    } else {
+                        lastError = `Modelo ${model}: Respuesta vacía o muy corta`;
+                        resultText = null;
+                        break;
+                    }
+                } catch (e) {
+                    if (e.name === 'AbortError') {
+                        lastError = `Modelo ${model}: Tiempo de espera agotado (2 min)`;
+                    } else {
+                        lastError = `Modelo ${model}: ${e.message}`;
+                    }
+                    break; // Salir de reintentos para errores de red/timeout y pasar al siguiente modelo
                 }
+            }
 
-                resultText = await response.text();
-                if (resultText && resultText.trim().length > 50) {
-                    break; // Éxito, salir del loop
-                } else {
-                    lastError = `Modelo ${model}: Respuesta vacía o muy corta`;
-                    resultText = null;
-                    continue;
-                }
-            } catch (e) {
-                lastError = e.name === 'AbortError' 
-                    ? `Modelo ${model}: Tiempo de espera agotado (2 min)` 
-                    : `Modelo ${model}: ${e.message}`;
-                continue;
+            if (modelSuccess) {
+                break; // Éxito total, salir del loop de modelos
             }
         }
 
@@ -402,6 +441,16 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
             alert(`Error al generar la planificación: ${error.message}`);
             loadingScreen.style.display = 'none';
             welcomeScreen.style.display = 'flex';
+        } finally {
+            // Rehabilitar formulario y restaurar botón
+            for (let i = 0; i < formElements.length; i++) {
+                // No rehabilitar el selector de asignatura si no hay curso seleccionado
+                if (formElements[i].id === 'subject-select' && !courseSelect.value) {
+                    continue;
+                }
+                formElements[i].disabled = false;
+            }
+            generateBtn.innerHTML = originalBtnHTML;
         }
     });
 
