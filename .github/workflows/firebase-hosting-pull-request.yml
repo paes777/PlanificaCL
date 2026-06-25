@@ -24,10 +24,13 @@ jobs:
         run: |
           echo "$SERVICE_ACCOUNT_KEY" > service-account.json
           
+      - name: Verify JSON Validity
+        run: python -c "import json; json.load(open('service-account.json')); print('JSON de credenciales es 100% valido.')"
+          
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
         
       - name: Deploy to Firebase Hosting
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: service-account.json
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
         run: firebase deploy --only hosting --non-interactive
