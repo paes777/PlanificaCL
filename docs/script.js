@@ -187,6 +187,11 @@ document.addEventListener('DOMContentLoaded', () => {
         documentViewer.style.display = 'none';
         loadingScreen.style.display = 'flex';
         resetLoadingSteps();
+        
+        // Scroll a pantalla de carga en móviles
+        if (window.innerWidth <= 768) {
+            loadingScreen.scrollIntoView({ behavior: 'smooth' });
+        }
 
         // Efectos dinámicos de texto en la carga
         const stepTimeouts = [];
