@@ -32,4 +32,16 @@ jobs:
       - name: Deploy to Firebase Hosting
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
-        run: firebase deploy --only hosting --project planificacl-a49c4 --non-interactive --debug
+        run: |
+          firebase deploy --only hosting --project planificacl-a49c4 --non-interactive --debug > deploy.log 2>&1 || {
+            echo "::error::Deployment failed. Outputting debug logs:"
+            python -c "
+            import sys
+            try:
+                for line in open('deploy.log', encoding='utf-8'):
+                    print(f'::warning::{line.strip()}')
+            except Exception as e:
+                print(f'::error::Failed to read deploy.log: {e}')
+            "
+            exit 1
+          }
