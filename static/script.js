@@ -254,7 +254,7 @@ REQUISITOS PEDAGÓGICOS DEL PORTAFOLIO DOCENTE (Nivel Experto):
 4. RECURSOS EDUCATIVOS: Crea una sección con los recursos necesarios (guías de trabajo detalladas, textos, presentaciones, enlaces a fichas interactivas estilo Twinkl).
 5. INSTRUMENTO DE EVALUACIÓN: Diseña una rúbrica o escala de apreciación con criterios y niveles para evaluar el logro del OA al término de las sesiones.
 
-Formatea tu respuesta de forma sumamente profesional usando Markdown estricto. Utiliza títulos, tablas para las actividades o rúbricas, y listas para facilitar la lectura. No uses explicaciones superfluas, ve directo al grano con contenido pedagógico real, creativo y original (las clases deben ser didácticas y entretenidas, no monótonas).`;
+Formatea tu respuesta de forma sumamente profesional usando Markdown estricto. Utiliza títulos, tablas para las actividades o rúbricas, y listas para facilitar la lectura. No uses explicaciones superfluas, ve directo al grano con contenido pedagógico real, creativo y original (las clases deben ser didácticas y entretenidas, no monótonas). IMPORTANTE: Sé sumamente conciso, breve y directo en cada sección. Evita textos de relleno, introducciones o saludos. Genera las tablas y actividades de forma compacta y esquemática para evitar exceder límites de tiempo.`;
         } else if (planType === 'unidad') {
             prompt = `Actúa como un diseñador instruccional y evaluador docente experto en Chile.
 Genera una planificación de UNIDAD didáctica de NIVEL EXPERTO para la asignatura de ${subjectName} en ${course.replace('_', ' ')}.
@@ -272,7 +272,7 @@ REQUISITOS PEDAGÓGICOS (Nivel Experto):
 6. ADECUACIONES CURRICULARES (DUA/PIE): Estrategias generales para la unidad.
 7. RECURSOS Y MATERIALES DE APOYO: Listado detallado.
 
-Formatea tu respuesta en Markdown profesional con tablas y listas.`;
+Formatea tu respuesta en Markdown profesional con tablas y listas. IMPORTANTE: Sé sumamente conciso, breve y directo en cada sección. Evita textos de relleno, introducciones o saludos. Genera las tablas y actividades de forma compacta y esquemática para evitar exceder límites de tiempo.`;
         } else if (planType === 'evaluacion') {
             prompt = `Actúa como un diseñador instruccional y evaluador docente experto en el sistema educativo de Chile, especialista en el Decreto 67 de evaluación formativa y sumativa.
 Tu tarea es generar un INSTRUMENTO DE EVALUACIÓN de NIVEL EXPERTO para la asignatura de ${subjectName} en ${course.replace('_', ' ')}.
@@ -287,7 +287,7 @@ REQUISITOS PEDAGÓGICOS DEL PORTAFOLIO DOCENTE (Nivel Experto):
 3. RÚBRICA DE EVALUACIÓN: Crea una rúbrica analítica muy detallada con 4 niveles de desempeño (Excelente, Bueno, Suficiente, Insuficiente) y descriptores claros para evaluar el instrumento o proyecto.
 4. RETROALIMENTACIÓN (Decreto 67): Sugiere 3 estrategias concretas para retroalimentar a los estudiantes a partir de los resultados de esta evaluación.
 
-Formatea tu respuesta de forma sumamente profesional usando Markdown estricto. Utiliza títulos, tablas y listas para facilitar la lectura. No uses explicaciones superfluas, ve directo al contenido pedagógico.`;
+Formatea tu respuesta de forma sumamente profesional usando Markdown estricto. Utiliza títulos, tablas y listas para facilitar la lectura. No uses explicaciones superfluas, ve directo al contenido pedagógico. IMPORTANTE: Sé sumamente conciso, breve y directo en cada sección. Evita textos de relleno, introducciones o saludos. Genera las tablas y actividades de forma compacta y esquemática para evitar exceder límites de tiempo.`;
         } else {
             prompt = `Actúa como un diseñador instruccional y evaluador docente experto en Chile.
 Genera una planificación ANUAL de NIVEL EXPERTO para la asignatura de ${subjectName} en ${course.replace('_', ' ')}.
@@ -302,7 +302,7 @@ REQUISITOS PEDAGÓGICOS (Nivel Experto):
 3. ORIENTACIONES METODOLÓGICAS GENERALES: Enfoque de enseñanza activa, aprendizaje profundo y DUA.
 4. PLAN DE EVALUACIÓN ANUAL: Descripción de cómo se aplicará el Decreto 67 en el aula (evaluación formativa y calificación).
 
-Formatea tu respuesta en Markdown profesional con tablas estructuradas por unidades.`;
+Formatea tu respuesta en Markdown profesional con tablas estructuradas por unidades. IMPORTANTE: Sé sumamente conciso, breve y directo en cada sección. Evita textos de relleno, introducciones o saludos. Genera las tablas y actividades de forma compacta y esquemática para evitar exceder límites de tiempo.`;
         }
 
         // Inyectar semilla de aleatoriedad para garantizar originalidad del diseño y evitar respuestas repetidas
@@ -310,104 +310,140 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
         prompt = `[ID de Generación Única: ${randomSalt} - Por favor, diseña actividades originales, didácticas y creativas, evitando repetir propuestas anteriores.]\n\n` + prompt;
 
         try {
-        // Lista de modelos a intentar en orden (con fallbacks seguros por defecto)
-        let modelsToTry = ['openai', 'openai-fast', 'gpt-oss'];
-        try {
-            const modelsResponse = await fetch('https://text.pollinations.ai/models');
-            if (modelsResponse.ok) {
-                const modelsData = await modelsResponse.json();
-                if (Array.isArray(modelsData) && modelsData.length > 0) {
-                    const dynamicModels = [];
-                    for (const m of modelsData) {
-                        if (m.name) dynamicModels.push(m.name);
-                        if (Array.isArray(m.aliases)) {
-                            dynamicModels.push(...m.aliases);
-                        }
-                    }
-                    if (dynamicModels.length > 0) {
-                        modelsToTry = [...new Set(dynamicModels)];
-                    }
-                }
-            }
-        } catch (e) {
-            console.error("Error al obtener la lista de modelos de Pollinations:", e);
-        }
-
-        // Asegurar que siempre contenga al menos 'openai'
-        if (!modelsToTry.includes('openai')) {
-            modelsToTry.unshift('openai');
-        }
-
         let resultText = null;
         let lastError = null;
 
-        for (const model of modelsToTry) {
-            // Intentar con reintentos y retroceso exponencial si ocurre error 429
-            const maxRetries = 3;
-            let currentRetry = 0;
-            let delay = 2000; // Delay inicial de 2 segundos
-            let modelSuccess = false;
+        // 1. Intentar primero con el servidor local de Flask si la aplicación se ejecuta localmente
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        if (isLocal) {
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        course: course,
+                        subject: subjectName,
+                        plan_type: planType,
+                        oa_id: oaId,
+                        oa_desc: oaDescription,
+                        num_classes: numClasses,
+                        additional_instructions: additionalInstructions
+                    })
+                });
 
-            while (currentRetry < maxRetries) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        resultText = data.plan_markdown;
+                    } else {
+                        lastError = `Backend: ${data.error}`;
+                    }
+                } else {
+                    lastError = `Servidor local: Código ${response.status}`;
+                }
+            } catch (e) {
+                lastError = `Conexión local: ${e.message}`;
+            }
+        }
 
-                    const randomSeedValue = Math.floor(Math.random() * 1000000000);
-                    const response = await fetch(`https://text.pollinations.ai/?cachebust=${Date.now()}&seed=${randomSeedValue}&nofeed=true`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            messages: [{role: "user", content: prompt}],
-                            model: model,
-                            seed: randomSeedValue,
-                            temperature: 0.9,
-                            nofeed: true
-                        }),
-                        signal: controller.signal
-                    });
-
-                    clearTimeout(timeoutId);
-
-                    if (response.status === 429) {
-                        currentRetry++;
-                        if (currentRetry < maxRetries) {
-                            console.warn(`Modelo ${model}: Recibió error 429 (Too Many Requests). Reintentando en ${delay}ms... (Intento ${currentRetry}/${maxRetries})`);
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                            delay *= 2; // Retroceso exponencial
-                            continue;
-                        } else {
-                            lastError = `Modelo ${model}: Límite de peticiones excedido (Error 429)`;
-                            break;
+        // 2. Si no se generó localmente (o si estamos en producción en Firebase), ir a Pollinations.ai directamente
+        if (!resultText) {
+            // Lista de modelos a intentar en orden (con fallbacks seguros por defecto)
+            let modelsToTry = ['openai', 'openai-fast', 'gpt-oss'];
+            try {
+                const modelsResponse = await fetch('https://text.pollinations.ai/models');
+                if (modelsResponse.ok) {
+                    const modelsData = await modelsResponse.json();
+                    if (Array.isArray(modelsData) && modelsData.length > 0) {
+                        const dynamicModels = [];
+                        for (const m of modelsData) {
+                            if (m.name) dynamicModels.push(m.name);
+                            if (Array.isArray(m.aliases)) {
+                                dynamicModels.push(...m.aliases);
+                            }
+                        }
+                        if (dynamicModels.length > 0) {
+                            modelsToTry = [...new Set(dynamicModels)];
                         }
                     }
-
-                    if (!response.ok) {
-                        lastError = `Modelo ${model}: Error ${response.status}`;
-                        break; // No reintentar otros códigos que no sean 429
-                    }
-
-                    resultText = await response.text();
-                    if (resultText && resultText.trim().length > 50) {
-                        modelSuccess = true;
-                        break; // Éxito, salir del loop de reintentos
-                    } else {
-                        lastError = `Modelo ${model}: Respuesta vacía o muy corta`;
-                        resultText = null;
-                        break;
-                    }
-                } catch (e) {
-                    if (e.name === 'AbortError') {
-                        lastError = `Modelo ${model}: Tiempo de espera agotado (2 min)`;
-                    } else {
-                        lastError = `Modelo ${model}: ${e.message}`;
-                    }
-                    break; // Salir de reintentos para errores de red/timeout y pasar al siguiente modelo
                 }
+            } catch (e) {
+                console.error("Error al obtener la lista de modelos de Pollinations:", e);
             }
 
-            if (modelSuccess) {
-                break; // Éxito total, salir del loop de modelos
+            // Asegurar que siempre contenga al menos 'openai'
+            if (!modelsToTry.includes('openai')) {
+                modelsToTry.unshift('openai');
+            }
+
+            for (const model of modelsToTry) {
+                // Intentar con reintentos y retroceso exponencial si ocurre error 429
+                const maxRetries = 3;
+                let currentRetry = 0;
+                let delay = 2000; // Delay inicial de 2 segundos
+                let modelSuccess = false;
+
+                while (currentRetry < maxRetries) {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
+
+                        const randomSeedValue = Math.floor(Math.random() * 1000000000);
+                        const response = await fetch(`https://text.pollinations.ai/?cachebust=${Date.now()}&seed=${randomSeedValue}&nofeed=true`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                messages: [{role: "user", content: prompt}],
+                                model: model,
+                                seed: randomSeedValue,
+                                temperature: 0.9,
+                                nofeed: true
+                            }),
+                            signal: controller.signal
+                        });
+
+                        clearTimeout(timeoutId);
+
+                        if (response.status === 429) {
+                            currentRetry++;
+                            if (currentRetry < maxRetries) {
+                                console.warn(`Modelo ${model}: Recibió error 429. Reintentando en ${delay}ms...`);
+                                await new Promise(resolve => setTimeout(resolve, delay));
+                                delay *= 2; // Retroceso exponencial
+                                continue;
+                            } else {
+                                lastError = `Modelo ${model}: Límite de peticiones excedido (Error 429)`;
+                                break;
+                            }
+                        }
+
+                        if (!response.ok) {
+                            lastError = `Modelo ${model}: Error ${response.status}`;
+                            break; // No reintentar otros códigos que no sean 429
+                        }
+
+                        resultText = await response.text();
+                        if (resultText && resultText.trim().length > 50) {
+                            modelSuccess = true;
+                            break; // Éxito, salir del loop de reintentos
+                        } else {
+                            lastError = `Modelo ${model}: Respuesta vacía o muy corta`;
+                            resultText = null;
+                            break;
+                        }
+                    } catch (e) {
+                        if (e.name === 'AbortError') {
+                            lastError = `Modelo ${model}: Tiempo de espera agotado (2 min)`;
+                        } else {
+                            lastError = `Modelo ${model}: ${e.message}`;
+                        }
+                        break; // Salir de reintentos para errores de red/timeout y pasar al siguiente modelo
+                    }
+                }
+
+                if (modelSuccess) {
+                    break; // Éxito total, salir del loop de modelos
+                }
             }
         }
 
@@ -415,7 +451,7 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
         stepTimeouts.forEach(clearTimeout);
 
         if (!resultText) {
-            throw new Error(`No se pudo conectar con la IA después de ${modelsToTry.length} intentos. Último error: ${lastError}. Por favor intenta de nuevo en unos segundos.`);
+            throw new Error(`No se pudo conectar con la IA. Último error: ${lastError}. Por favor intenta de nuevo en unos segundos.`);
         }
 
         generatedMarkdown = resultText;

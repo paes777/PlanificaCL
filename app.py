@@ -181,7 +181,8 @@ Formatea tu respuesta en Markdown profesional con tablas estructuradas por unida
     try:
         response = g4f.ChatCompletion.create(
             model=g4f.models.default,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
+            provider=g4f.Provider.OperaAria
         )
         return jsonify({
             'success': True,
