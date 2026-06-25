@@ -25,7 +25,7 @@ jobs:
           echo "$SERVICE_ACCOUNT_KEY" > service-account.json
           
       - name: Verify JSON Validity
-        run: python -c "import json; json.load(open('service-account.json')); print('JSON de credenciales es 100% valido.')"
+        run: python -c "import json; data = json.load(open('service-account.json')); print('Project ID:', data.get('project_id')); print('Client Email:', data.get('client_email')); print('Type:', data.get('type'))"
           
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
